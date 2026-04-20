@@ -74,38 +74,51 @@ async function loadTodos() {
     }
 }
 
-function toggleImages(id) {
-    const todo = myTodos.find(t => t.id === id);
-    if (todo) {
-        todo.showImages = !todo.showImages;
-        saveAndRenderTodos();
+async function toggleImages(id) {
+    try {
+        await fetch(`https://backend-production-30ee.up.railway.app/atividades/${id}/toggle-imagens`, {
+            method: "PUT"
+        });
+
+        loadTodos();
+    } catch (err) {
+        console.error(err);
     }
 }
 
-function toggleTodo(id) {
-    const todo = myTodos.find(t => t.id === id);
-    if (todo) {
-        todo.completed = !todo.completed;
-        saveAndRenderTodos();
+async function toggleTodo(id) {
+    try {
+        await fetch(`https://backend-production-30ee.up.railway.app/atividades/${id}/concluir`, {
+            method: "PUT"
+        });
+
+        loadTodos();
+    } catch (err) {
+        console.error(err);
     }
 }
 
-function deleteTodo(id) {
-    const confirmacao = confirm("Tem certeza que deseja excluir esta atividade?");
-
+async function deleteTodo(id) {
+    const confirmacao = confirm("Tem certeza que deseja excluir?");
     if (!confirmacao) return;
 
-    myTodos = myTodos.filter(t => t.id !== id);
-    saveAndRenderTodos();
-}
+    try {
+        await fetch(`https://backend-production-30ee.up.railway.app/atividades/${id}`, {
+            method: "DELETE"
+        });
 
+        loadTodos();
+    } catch (err) {
+        console.error(err);
+    }
+}
 function saveAndRenderTodos() {
     localStorage.setItem('userTodos', JSON.stringify(myTodos));
     renderTodos();
 }
 
 function renderTodos(todos) {
-    if (!Array.isArray(todos)) return;
+    
     const container = document.getElementById('todoListDisplay');
     container.innerHTML = "";
 
@@ -113,7 +126,7 @@ function renderTodos(todos) {
         let imagesHTML = "";
         let filesHTML = "";
 
-        if (todo.images) {
+        if (todo.images && todo.showImages) {
             todo.images.forEach(img => {
                 imagesHTML += `<img src="https://backend-production-30ee.up.railway.app/uploads/${img}" width="100">`;
             });
@@ -127,12 +140,12 @@ function renderTodos(todos) {
             filesHTML += `<a href="https://backend-production-30ee.up.railway.app/uploads/${todo.word}" download>📝 Word</a>`;
         }
 
-        container.innerHTML +=
-            `<div class="todo-item ${todo.completed ? 'completed' : ''}">
+        container.innerHTML += `
+            <div class="todo-item ${todo.completed ? 'completed' : ''}">
                 <h3>${todo.text}</h3>
                 <p>${todo.description}</p>
 
-                <div class="todo-images" style="display:${todo.showImages ? 'flex' : 'none'}">
+                <div class="todo-images">
                     ${imagesHTML}
                 </div>
 
