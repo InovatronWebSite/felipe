@@ -611,7 +611,7 @@ function displaySuggestions() {
 
 // INICIALIZAÇÃO FINAL (TUDO JUNTO)
 window.addEventListener('load', () => {
-    renderTodos();
+    loadTodos(); // ✅ agora sim
     displayNotes();
     renderCalendar();
     renderChart();
