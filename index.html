@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="Author" content="Fenrir pra Sempre">
+    <title>Portal Inovatron</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">✨ Portal <span>Inovatron</span></div>
+        <ul>
+            <li onclick="showSection('home')">Início</li>
+            <li onclick="showSection('atividades')">Atividades</li>
+            <li onclick="showSection('enquetes')">Enquetes</li>
+            <li onclick="showSection('calendario')">Calendário</li>
+            <li onclick="showSection('iot')">Conteúdo IoT</li>
+            <li onclick="showSection('notas')">Anotações</li>
+            <li onclick="showSection('simulador')">Simular Prova</li>
+            <li onclick="showSection('dificuldades')">Dificuldades</li>
+            <li onclick="showSection('sugestoes')">Sugestões</li>
+            <li onclick="showSection('sobre')">Sobre</li>
+        </ul>
+    </nav>
+    <button class="toggle-sidebar" onclick="toggleSidebar()">☰</button>
+
+    <main class="content">
+        <section id="home" class="active">
+            <h1>Bem-vindo ao Portal <strong>Inovatron</strong></h1>
+            <p>Seu espaço dedicado para estudos, organização e colaboração.</p>
+            <div class="card-gold"> O melhor
+                site estudantil para <abbr title="O porta malas do meu Opala cabem 7 corpos, fica espeto...">organização
+                    pessoal!</abbr></div>
+            <p class="botoesabas">Acesse as abas na parte lateral ou clique abaixo</p>
+            <div class="botoesini">
+
+                <ul>
+                    <li onclick="showSection('home')">Início</li>
+                    <li onclick="showSection('atividades')">Atividades</li>
+                    <li onclick="showSection('enquetes')">Enquetes</li>
+                    <li onclick="showSection('calendario')">Calendário</li>
+                    <li onclick="showSection('iot')">Conteúdo IoT</li>
+                    <li onclick="showSection('notas')">Anotações</li>
+                    <li onclick="showSection('simulador')">Simular Prova</li>
+                    <li onclick="showSection('dificuldades')">Dificuldades</li>
+                    <li onclick="showSection('sugestoes')">Sugestões</li>
+                    <li onclick="showSection('sobre')">Sobre</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="atividades">
+            <h1>Lista de Atividades Semanais</h1>
+            <p>Organize suas tarefas e acompanhe o que ainda está pendente.</p>
+
+            <div class="card-gold">
+                <div class="todo-input-group1">
+                    <input type="text" id="todoInput" placeholder="Coloque aqui suas atividades...">
+                </div>
+                <div class="todo-input-group1">
+                    <input type="text" id="todoDesc" placeholder="Adicione uma descrição para a atividade...">
+                    <button class="btn-gold" onclick="addTodo()">Adicionar</button>
+                </div>
+                <div class="todo-input-group">
+                    <label>Imagens (máx 5)</label>
+                    <input type="file" id="todoImage" accept="image/*" multiple>
+                </div>
+
+                <div id="imagePreviewContainer"></div>
+
+                <div class="todo-input-group">
+                    <label>PDF</label>
+                    <input type="file" id="todoPdf" accept=".pdf">
+                </div>
+
+                <div id="pdfPreview"></div>
+
+                <div class="todo-input-group">
+                    <label>Word</label>
+                    <input type="file" id="todoWord" accept=".doc,.docx">
+                </div>
+                <div class="todo-list-container">
+                    <div id="todoListDisplay"></div>
+                </div>
+                <div id="wordPreview"></div>
+        </section>
+
+        <section id="enquetes">
+            <h1>Painel de Enquetes</h1>
+            <div class="card-gold">
+                <h3>Criar Nova Enquete</h3>
+                <div class="divquestoes">
+                    <input type="text" id="pollQuestion" placeholder="Pergunta da enquete...">
+
+                    <div id="optionsContainer">
+
+                        <div class="option-item">
+                            <input type="text" class="poll-option" placeholder="Opção 1">
+                            <button onclick="removeOption(this)">✖</button>
+                        </div>
+
+                        <div class="option-item">
+                            <input type="text" class="poll-option" placeholder="Opção 2">
+                            <button onclick="removeOption(this)">✖</button>
+                        </div>
+
+                    </div>
+
+                    <button class="botao-add" onclick="addOption()">+ Adicionar opção</button>
+                    <div class="botoes-enquete">
+                        <button class="btn-gold" onclick="createNewPoll()">Criar Enquete</button>
+                    </div>
+
+                </div>
+            </div>
+            <div id="pollsContainer" style="margin-top: 20px;"></div>
+        </section>
+
+        <section id="calendario">
+            <h1>Calendário de Eventos 2026</h1>
+            <div class="calendar-controls">
+                <button class="btn-gold" onclick="changeMonth(-1)">◀ Anterior</button>
+                <span id="monthDisplay">Janeiro 2026</span>
+                <button class="btn-gold" onclick="changeMonth(1)">Próximo ▶</button>
+            </div>
+
+            <div class="calendar-grid" id="calendarGrid">
+            </div>
+
+            <div id="eventModal" class="modal">
+                <div class="modal-content">
+                    <h3>Adicionar Evento</h3>
+                    <p id="selectedDateText"></p>
+                    <div class="event-input-box">
+                        <input type="text" id="eventInput" placeholder="Digite um evento...">
+                    </div>
+                    <div id="eventList"></div>
+                    <div class="modal-buttons">
+                        <button class="btn-gold" onclick="saveEvent()">Salvar</button>
+                        <button class="btn-delete" onclick="deleteEvent()">Excluir</button>
+                        <button class="btn-outline" onclick="closeModal()">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="notas">
+            <h1>Meu Bloco de Notas</h1>
+            <div class="note-container">
+                <textarea id="noteInput" placeholder="Salve suas anotações aqui..."></textarea>
+                <button class="btn-gold" onclick="saveNote()">Adicionar Nota</button>
+            </div>
+
+            <div class="notes-list-wrapper">
+                <h3>Minhas Anotações</h3>
+                <div id="savedNotesList">
+                </div>
+            </div>
+        </section>
+
+        <section id="dificuldades">
+            <h1>📊 Radar de Dificuldades</h1>
+
+            <div class="card-gold">
+
+                <p>Vote na matéria que você tem mais dificuldade:</p>
+
+                <div class="quick-buttons">
+                    <button class="btn-mat" onclick="addDifficultyQuick('Matemática')">
+                        <span>📐</span> Matemática
+                    </button>
+
+                    <button class="btn-nat" onclick="addDifficultyQuick('Ciências da Natureza')">
+                        <span>🌱</span> Natureza
+                    </button>
+
+                    <button class="btn-hum" onclick="addDifficultyQuick('Ciências Humanas')">
+                        <span>🌍</span> Humanas
+                    </button>
+
+                    <button class="btn-ling" onclick="addDifficultyQuick('Linguagens')">
+                        <span>📝</span> Linguagens
+                    </button>
+                </div>
+
+                <div class="input-group-modern">
+                    <div class="input-wrapper">
+                        <span class="input-icon">📚</span>
+                        <input type="text" id="subjectInput" placeholder="Digite outra matéria...">
+                    </div>
+
+                    <button class="btn-add-materia" onclick="addDifficulty()">
+                        ➕ Adicionar
+                    </button>
+                </div>
+
+                <button class="btn-delete" onclick="resetDifficulties()">Resetar Dados</button>
+
+            </div>
+
+            <div class="chart-container">
+                <canvas id="difficultyChart"></canvas>
+            </div>
+            
+
+            <div class="ranking-container">
+                <h3>🏆 Ranking de Dificuldades</h3>
+                <div id="difficultyRanking"></div>
+            </div>
+        </section>
+
+        <section id="sugestoes">
+            <h1>Sugestões da Turma</h1>
+            <p>Tens alguma ideia ou reclamação para as aulas ou o site? Manda que nois resolve!</p>
+
+            <div class="suggestion-container">
+                <textarea id="suggestionInput" placeholder="Escreve aqui a tua sugestão..."></textarea>
+                <button class="btn-gold" onclick="addSuggestion()">Enviar Sugestão</button>
+            </div>
+
+            <div class="suggestions-list">
+                <h3>Sugestões Recentes</h3>
+                <div id="suggestionsDisplay">
+                </div>
+            </div>
+        </section>
+        <button onclick="logout()">Sair</button>
+    </main>
+
+    <script src="script.js"></script>
+    <div id="imageModal" class="image-modal">
+        <span class="close-modal" onclick="closeGallery()">✖</span>
+        <button class="nav prev" onclick="changeImage(-1)">◀</button>
+
+        <img id="modalImage">
+
+        <button class="nav next" onclick="changeImage(1)">▶</button>
+    </div>
+
+</body>
+
+</html>

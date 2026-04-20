@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body style="display:flex; justify-content:center; align-items:center; height:100vh;">
+
+    <div class="card-gold" style="width:300px; text-align:center;">
+        <h2>📝 Cadastro</h2>
+
+        <input type="text" id="nome" placeholder="Nome"><br><br>
+        <input type="text" id="email" placeholder="Email"><br><br>
+        <input type="password" id="senha" placeholder="Senha"><br><br>
+
+        <button class="btn-gold" onclick="register()">Cadastrar</button>
+
+        <p>Já tem conta?</p>
+        <button class="btn-outline" onclick="goLogin()">Voltar ao login</button>
+    </div>
+
+    <script>
+
+        async function register() {
+            const nome = document.getElementById('nome').value
+            const email = document.getElementById('email').value
+            const senha = document.getElementById('senha').value
+
+            const res = await fetch("https://backend-production-30ee.up.railway.app/cadastro", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ nome, email, senha })
+            })
+
+            const data = await res.text()
+
+            alert(data)
+            window.location.href = "login.html"
+        }
+    </script>
+
+</body>
+
+</html>
