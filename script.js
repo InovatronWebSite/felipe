@@ -105,6 +105,7 @@ function saveAndRenderTodos() {
 }
 
 function renderTodos(todos) {
+    if (!Array.isArray(todos)) return;
     const container = document.getElementById('todoListDisplay');
     container.innerHTML = "";
 
