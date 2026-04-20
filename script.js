@@ -32,10 +32,9 @@ async function addTodo() {
     formData.append("text", text);
     formData.append("description", desc);
 
-    const images = document.getElementById("todoImage").files;
-    for (let i = 0; i < images.length; i++) {
-        formData.append("images", images[i]);
-    }
+    selectedImages.forEach(item => {
+        formData.append("images", item.file);
+    });
 
     const pdf = document.getElementById("todoPdf").files[0];
     if (pdf) formData.append("pdf", pdf);
@@ -57,6 +56,8 @@ async function addTodo() {
     }
 
     loadTodos();
+    selectedImages = [];
+    document.getElementById('imagePreviewContainer').innerHTML = "";
 }
 
 async function loadTodos() {
@@ -118,15 +119,18 @@ function saveAndRenderTodos() {
 }
 
 function renderTodos(todos) {
-    
+
     const container = document.getElementById('todoListDisplay');
     container.innerHTML = "";
+    function formatFileName(name) {
+        return name.replace(/^\d+-/, '');
+    }
 
     todos.forEach(todo => {
         let imagesHTML = "";
         let filesHTML = "";
 
-        if (todo.images && todo.showImages) {
+        if (todo.images && Number(todo.showImages) === 1) {
             todo.images.forEach(img => {
                 imagesHTML += `<img src="https://backend-production-30ee.up.railway.app/uploads/${img}" width="100">`;
             });
@@ -136,7 +140,7 @@ function renderTodos(todos) {
             filesHTML += `
                 <div class="file-card pdf">
                     <a href="https://backend-production-30ee.up.railway.app/uploads/${todo.pdf}" download>
-                        📄 <span>${todo.pdf}</span>
+                        📄 <span>${formatFileName(todo.pdf)}</span>
                     </a>
                 </div>
             `;
@@ -146,7 +150,7 @@ function renderTodos(todos) {
             filesHTML += `
                 <div class="file-card word">
                     <a href="https://backend-production-30ee.up.railway.app/uploads/${todo.word}" download>
-                        📝 <span>${todo.word.split('-').slice(1).join('-')}</span>
+                        📝 <span>${formatFileName(todo.word)}</span>
                     </a>
                 </div>
             `;
