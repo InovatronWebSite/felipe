@@ -43,19 +43,35 @@ async function addTodo() {
     const word = document.getElementById("todoWord").files[0];
     if (word) formData.append("word", word);
 
-    await fetch("https://backend-production-30ee.up.railway.app/atividades", {
+    const res = await fetch("https://backend-production-30ee.up.railway.app/atividades", {
         method: "POST",
         body: formData
     });
 
-    loadTodos(); 
+    const data = await res.json();
+    console.log(data);
+
+    if (!res.ok) {
+        alert("Erro ao salvar atividade");
+        return;
+    }
+
+    loadTodos();
 }
 
 async function loadTodos() {
-    const res = await fetch("https://backend-production-30ee.up.railway.app/atividades");
-    const data = await res.json();
+    try {
+        const res = await fetch("https://backend-production-30ee.up.railway.app/atividades");
 
-    renderTodos(data);
+        if (!res.ok) throw new Error("Erro no servidor");
+
+        const data = await res.json();
+
+        renderTodos(data);
+
+    } catch (err) {
+        console.error("Erro ao carregar atividades:", err);
+    }
 }
 
 function toggleImages(id) {
@@ -110,8 +126,8 @@ function renderTodos(todos) {
             filesHTML += `<a href="https://backend-production-30ee.up.railway.app/uploads/${todo.word}" download>📝 Word</a>`;
         }
 
-        container.innerHTML += `
-            <div class="todo-item">
+        container.innerHTML +=
+            `<div class="todo-item">
                 <h3>${todo.text}</h3>
                 <p>${todo.description}</p>
                 <div>${imagesHTML}</div>
