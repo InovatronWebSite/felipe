@@ -118,7 +118,7 @@ function saveAndRenderTodos() {
 }
 
 function renderTodos(todos) {
-    
+
     const container = document.getElementById('todoListDisplay');
     container.innerHTML = "";
 
@@ -126,22 +126,34 @@ function renderTodos(todos) {
         let imagesHTML = "";
         let filesHTML = "";
 
-        if (todo.images && todo.showImages) {
+        if (todo.images && Number(todo.showImages) === 1) {
             todo.images.forEach(img => {
                 imagesHTML += `<img src="https://backend-production-30ee.up.railway.app/uploads/${img}" width="100">`;
             });
         }
 
         if (todo.pdf) {
-            filesHTML += `<a href="https://backend-production-30ee.up.railway.app/uploads/${todo.pdf}" download>📄 PDF</a>`;
+            filesHTML += `
+                <div class="file-card pdf">
+                    <a href="https://backend-production-30ee.up.railway.app/uploads/${todo.pdf}" download>
+                        📄 <span>${todo.pdf}</span>
+                    </a>
+                </div>
+            `;
         }
 
         if (todo.word) {
-            filesHTML += `<a href="https://backend-production-30ee.up.railway.app/uploads/${todo.word}" download>📝 Word</a>`;
+            filesHTML += `
+                <div class="file-card word">
+                    <a href="https://backend-production-30ee.up.railway.app/uploads/${todo.word}" download>
+                        📝 <span>${todo.word}</span>
+                    </a>
+                </div>
+            `;
         }
 
         container.innerHTML += `
-            <div class="todo-item ${todo.completed ? 'completed' : ''}">
+            <div class="todo-item ${Number(todo.completed) === 1 ? 'completed' : ''}">
                 <h3>${todo.text}</h3>
                 <p>${todo.description}</p>
 
