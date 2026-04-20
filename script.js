@@ -118,7 +118,7 @@ function saveAndRenderTodos() {
 }
 
 function renderTodos(todos) {
-
+    
     const container = document.getElementById('todoListDisplay');
     container.innerHTML = "";
 
@@ -126,7 +126,7 @@ function renderTodos(todos) {
         let imagesHTML = "";
         let filesHTML = "";
 
-        if (todo.images && Number(todo.showImages) === 1) {
+        if (todo.images && todo.showImages) {
             todo.images.forEach(img => {
                 imagesHTML += `<img src="https://backend-production-30ee.up.railway.app/uploads/${img}" width="100">`;
             });
@@ -146,7 +146,7 @@ function renderTodos(todos) {
             filesHTML += `
                 <div class="file-card word">
                     <a href="https://backend-production-30ee.up.railway.app/uploads/${todo.word}" download>
-                        📝 <span>${todo.word}</span>
+                        📝 <span>${todo.word.split('-').slice(1).join('-')}</span>
                     </a>
                 </div>
             `;
