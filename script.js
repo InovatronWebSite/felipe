@@ -128,11 +128,31 @@ function renderTodos(todos) {
         }
 
         container.innerHTML +=
-            `<div class="todo-item">
+            `<div class="todo-item ${todo.completed ? 'completed' : ''}">
                 <h3>${todo.text}</h3>
                 <p>${todo.description}</p>
-                <div>${imagesHTML}</div>
-                <div>${filesHTML}</div>
+
+                <div class="todo-images" style="display:${todo.showImages ? 'flex' : 'none'}">
+                    ${imagesHTML}
+                </div>
+
+                <div class="files-container">
+                    ${filesHTML}
+                </div>
+
+                <div class="todo-actions">
+                    <button onclick="toggleImages(${todo.id})">
+                        ${todo.showImages ? 'Ocultar imagens' : 'Mostrar imagens'}
+                    </button>
+
+                    <button onclick="toggleTodo(${todo.id})">
+                        ${todo.completed ? 'Desmarcar' : 'Concluir'}
+                    </button>
+
+                    <button onclick="deleteTodo(${todo.id})">
+                        Excluir
+                    </button>
+                </div>
             </div>
         `;
     });
