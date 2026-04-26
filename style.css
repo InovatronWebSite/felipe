@@ -135,7 +135,7 @@ strong {
 
 
 
-.option-item button {
+.deletePoll, .option-item button {
     background-color: rgb(211, 8, 8);
     border-radius: 15px;
     color: white;
@@ -1074,4 +1074,20 @@ textarea {
 }
 .sidebar.closed ul {
     pointer-events: none;
+}
+
+.poll-btn {
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-weight: 500;
+    font-size: 20px;
+}
+
+.poll-btn:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
 }

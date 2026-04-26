@@ -24,17 +24,22 @@ let selectedPdf = null;
 let selectedWord = null;
 
 async function addTodo() {
+
     const text = document.getElementById('todoInput').value;
     const desc = document.getElementById('todoDesc').value;
 
     const formData = new FormData();
 
+    formData.append("user", logged);
+
     formData.append("text", text);
     formData.append("description", desc);
 
-    selectedImages.forEach(item => {
-        formData.append("images", item.file);
-    });
+    const imageInput = document.getElementById("todoImage");
+
+    for (let i = 0; i < imageInput.files.length; i++) {
+        formData.append("images", imageInput.files[i]);
+    }
 
     const pdf = document.getElementById("todoPdf").files[0];
     if (pdf) formData.append("pdf", pdf);
@@ -47,26 +52,34 @@ async function addTodo() {
         body: formData
     });
 
-    const data = await res.json();
-    console.log(data);
-
     if (!res.ok) {
-        alert("Erro ao salvar atividade");
+        alert("Erro ao salvar");
         return;
     }
 
-    loadTodos();
-    selectedImages = [];
+    // limpa depois de enviar
+    document.getElementById('todoInput').value = "";
+    document.getElementById('todoDesc').value = "";
+    document.getElementById('todoPdf').value = "";
+    document.getElementById('todoWord').value = "";
     document.getElementById('imagePreviewContainer').innerHTML = "";
+
+    loadTodos();
 }
 
 async function loadTodos() {
     try {
-        const res = await fetch("https://backend-production-30ee.up.railway.app/atividades");
+        const logged = localStorage.getItem('loggedUser');
+
+        const res = await fetch(
+            `https://backend-production-30ee.up.railway.app/atividades?user=${logged}`
+        );
 
         if (!res.ok) throw new Error("Erro no servidor");
 
         const data = await res.json();
+
+        currentTodos = data;
 
         renderTodos(data);
 
@@ -131,15 +144,21 @@ function renderTodos(todos) {
         let filesHTML = "";
 
         if (todo.images && Number(todo.showImages) === 1) {
-            todo.images.forEach(img => {
-                imagesHTML += `<img src="https://backend-production-30ee.up.railway.app/uploads/${img}" width="100">`;
+            todo.images.forEach((img, index) => {
+                imagesHTML += `
+                    <img 
+                        src="https://backend-production-30ee.up.railway.app/uploads/${img}" 
+                        width="100"
+                        onclick="openGallery(${todo.id}, ${index})"
+                    >
+                `;
             });
         }
 
         if (todo.pdf) {
             filesHTML += `
                 <div class="file-card pdf">
-                    <a href="https://backend-production-30ee.up.railway.app/uploads/${todo.pdf}" download>
+                    <a href="https://backend-production-30ee.up.railway.app/uploads/${todo.pdf}" target="_blank">
                         📄 <span>${formatFileName(todo.pdf)}</span>
                     </a>
                 </div>
@@ -186,23 +205,24 @@ function renderTodos(todos) {
         `;
     });
 }
-
+let currentTodos = [];
 let currentImages = [];
 let currentIndex = 0;
-
+function closeGallery() {
+    document.getElementById('imageModal').style.display = 'none';
+}
 function openGallery(todoId, index) {
-    const todo = myTodos.find(t => t.id === todoId);
+    const todo = currentTodos.find(t => t.id === todoId);
     if (!todo) return;
 
-    currentImages = todo.images;
+    currentImages = todo.images.map(img =>
+        `https://backend-production-30ee.up.railway.app/uploads/${img}`
+    );
+
     currentIndex = index;
 
     document.getElementById('imageModal').style.display = 'flex';
     updateImage();
-}
-
-function closeGallery() {
-    document.getElementById('imageModal').style.display = 'none';
 }
 
 function changeImage(direction) {
@@ -227,46 +247,45 @@ function updateImage() {
 let polls = JSON.parse(localStorage.getItem('myPolls')) || [];
 let pollCharts = {};
 
-function createNewPoll() {
+async function createNewPoll() {
     const q = document.getElementById('pollQuestion').value.trim();
     const optionInputs = document.querySelectorAll('.poll-option');
+
     const opts = [];
 
     optionInputs.forEach(input => {
         const value = input.value.trim();
-        if (value !== "") {
-            opts.push(value);
-        }
+        if (value !== "") opts.push(value);
     });
 
     if (!q || opts.length < 2) {
-        alert("Digite a pergunta e pelo menos 2 opções válidas!");
+        alert("Digite a pergunta e pelo menos 2 opções!");
         return;
     }
 
-    polls.push({
-        id: 'p' + Date.now(),
-        question: q,
-        options: opts,
-        votes: new Array(opts.length).fill(0)
-    });
+    try {
+        const res = await fetch("https://backend-production-30ee.up.railway.app/polls", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                user: logged,
+                question: q,
+                options: opts
+            })
+        });
 
-    localStorage.setItem('myPolls', JSON.stringify(polls));
-    renderPolls();
+        if (!res.ok) throw new Error("Erro ao criar enquete");
 
-    document.getElementById('pollQuestion').value = "";
+        document.getElementById('pollQuestion').value = "";
 
-    const container = document.getElementById('optionsContainer');
-    container.innerHTML = `
-        <div class="option-item">
-            <input type="text" class="poll-option" placeholder="Opção 1">
-            <button class onclick="removeOption(this)">✖</button>
-        </div>
-        <div class="option-item">
-            <input type="text" class="poll-option" placeholder="Opção 2">
-            <button onclick="removeOption(this)">✖</button>
-        </div>
-    `;
+        loadPolls();
+
+    } catch (err) {
+        console.error(err);
+        alert("Erro ao criar enquete");
+    }
 }
 
 function addOption() {
@@ -301,49 +320,126 @@ function removeOption(btn) {
     btn.parentElement.remove();
 }
 
-function renderPolls() {
-    const pollColors = ['#d4af37', '#333', '#888', '#b86a6a', '#9ddd37', '#8a31df', '#37b8d4', '#d4379e', '#d4b837', '#6ad437'];
+function getColor(index) {
+    const colors = [
+        "#4facfe", // azul
+        "#43e97b", // verde
+        "#f7971e", // laranja
+        "#a18cd1", // roxo
+        "#ff6a88", // rosa
+        "#00c9a7", // turquesa
+        "#ffc75f"  // amarelo
+    ];
+
+    return colors[index % colors.length];
+}
+
+function renderPolls(polls) {
     const container = document.getElementById('pollsContainer');
+
+    if (!polls || polls.length === 0) {
+        container.innerHTML = "<p>Nenhuma enquete ainda.</p>";
+        return;
+    }
+
     container.innerHTML = polls.map(p => `
         <div class="poll-card">
-            <button onclick="deletePoll('${p.id}')" style="color:red; background:none; border:none; cursor:pointer;">Excluir</button>
-            <h3>${p.question}</h3>
-            <div class="poll-options">
-            ${p.options.map((o, i) => `
-                <div class="poll-option-line">
-                    <button 
-                        onclick="vote('${p.id}', ${i})"
-                        style="background:${pollColors[i]}; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;"
-                    >
-                        ${o}
-                    </button>
 
-                    <span class="vote-info">
-                        ${p.votes[i]} votos (${getPercentage(p.votes, i)}%)
-                    </span>
-                </div>
-            `).join('')}
-        </div>
-            <canvas class="canvas" id="chart-${p.id}"></canvas>
-            
+            <button class="deletePoll" onclick="deletePoll('${p.id}')">Excluir</button>
+
+            <h3>${p.question}</h3>
+
+            <div class="poll-options">
+                ${p.options.map((opt, i) => `
+                    <div class="poll-option-line">
+                        <button 
+                            class="poll-btn"
+                            style="background:${getColor(i)}"
+                            onclick="vote('${p.id}', ${i})">
+                            ${opt}
+                        </button>
+
+                        <span>
+                            ${p.votes[i]} votos (${getPercentage(p.votes, i)}%)
+                        </span>
+                    </div>
+                `).join('')}
+            </div>
+
+            <canvas id="chart-${p.id}" class="canvas"></canvas>
+
         </div>
     `).join('');
-
     polls.forEach(p => {
-        const ctx = document.getElementById(`chart-${p.id}`).getContext('2d');
-        if (pollCharts[p.id]) pollCharts[p.id].destroy();
+    const ctx = document.getElementById(`chart-${p.id}`);
+
+    if (!ctx) return;
+
+    new Chart(ctx, {
+        type: 'doughnut', 
+        data: {
+            labels: p.options,
+            datasets: [{
+                data: p.votes,
+                backgroundColor: [
+                    '#ff6384',
+                    '#36a2eb',
+                    '#ffce56',
+                    '#4bc0c0',
+                    '#9966ff'
+                ]
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+    function createCharts(polls) {
+    polls.forEach(p => {
+        const ctx = document.getElementById(`chart-${p.id}`);
+        if (!ctx) return;
+
+        // evita duplicar gráfico
+        if (pollCharts[p.id]) {
+            pollCharts[p.id].destroy();
+        }
 
         pollCharts[p.id] = new Chart(ctx, {
-            type: 'pie',
+            type: 'doughnut',
             data: {
                 labels: p.options,
                 datasets: [{
-                    data: p.votes,
-                    backgroundColor: pollColors.slice(0, p.options.length)
+                    data: p.votes
                 }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
             }
         });
     });
+    
+}
+});
+}
+
+async function loadPolls() {
+    try {
+        const res = await fetch("https://backend-production-30ee.up.railway.app/polls");
+
+        if (!res.ok) throw new Error("Erro ao buscar enquetes");
+
+        const data = await res.json();
+
+        renderPolls(data);
+
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 function getPercentage(votes, index) {
@@ -352,17 +448,43 @@ function getPercentage(votes, index) {
     return ((votes[index] / total) * 100).toFixed(1);
 }
 
-function vote(id, idx) {
-    const p = polls.find(x => x.id === id);
-    p.votes[idx]++;
-    localStorage.setItem('myPolls', JSON.stringify(polls));
-    renderPolls();
-}
+async function vote(id, index) {
+    const user = localStorage.getItem("loggedUser");
 
-function deletePoll(id) {
-    polls = polls.filter(p => p.id !== id);
-    localStorage.setItem('myPolls', JSON.stringify(polls));
-    renderPolls();
+    const res = await fetch(`https://backend-production-30ee.up.railway.app/polls/${id}/vote`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            optionIndex: index,
+            user: user
+        })
+    });
+
+    if (!res.ok) {
+        const err = await res.json();
+        alert(err.error);
+        return;
+    }
+
+    loadPolls();
+}
+async function deletePoll(id) {
+    if (!confirm("Deseja excluir essa enquete?")) return;
+
+    try {
+        const res = await fetch(`https://backend-production-30ee.up.railway.app/polls/${id}`, {
+            method: "DELETE"
+        });
+
+        if (!res.ok) throw new Error("Erro ao deletar");
+
+        loadPolls();
+
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 // NOTAS
@@ -666,6 +788,7 @@ window.addEventListener('load', () => {
     renderCalendar();
     renderChart();
     displaySuggestions();
+    loadPolls();
 
     const imageInput = document.getElementById('todoImage');
     const previewContainer = document.getElementById('imagePreviewContainer');
@@ -696,7 +819,6 @@ window.addEventListener('load', () => {
         });
 
         // limpa o input pra poder selecionar mais depois
-        this.value = "";
     });
 
     const pdfInput = document.getElementById('todoPdf');
